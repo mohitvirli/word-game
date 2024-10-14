@@ -43,6 +43,7 @@ export default function StartGame() {
                   id="playerName"
                   value={playerName}
                   onChange={(e) => setPlayerName(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && addPlayer()}
                   className="flex-grow"
                   placeholder="Enter player name"
                 />
