@@ -36,7 +36,7 @@ export default function Game() {
   const searchParams = useSearchParams()
   const [players, setPlayers] = useState<{ name: string; score: number }[]>([])
   const [wordLength, setWordLength] = useState(5)
-  const [turnTime, setTurnTime] = useState(120)
+  const [turnTime, setTurnTime] = useState(0)
   const [currentWord, setCurrentWord] = useState('')
   const [words, setWords] = useState<{ [key: string]: { word: string; meaning: string; isNew?: boolean }[] }>({})
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0)
@@ -44,7 +44,7 @@ export default function Game() {
   const [usedLetters, setUsedLetters] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [newBlock, setNewBlock] = useState<string | null>(null)
-  const [timeLeft, setTimeLeft] = useState(turnTime)
+  const [timeLeft, setTimeLeft] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -55,8 +55,11 @@ export default function Game() {
     if (playersParam && wordLengthParam && turnTimeParam) {
       setPlayers(JSON.parse(playersParam).map((name: string) => ({ name, score: 0 })))
       setWordLength(parseInt(wordLengthParam))
-      setTurnTime(parseInt(turnTimeParam))
-      setTimeLeft(parseInt(turnTimeParam))
+      const parsedTurnTime = parseInt(turnTimeParam)
+      setTurnTime(parsedTurnTime)
+      if (parsedTurnTime > 0) {
+        setTimeLeft(parsedTurnTime)
+      }
     }
   }, [searchParams])
 
@@ -72,19 +75,21 @@ export default function Game() {
   }, [newBlock])
 
   useEffect(() => {
-    timerRef.current = setInterval(() => {
-      setTimeLeft((prevTime) => {
-        if (prevTime <= 1) {
-          clearInterval(timerRef.current!)
-          nextTurn()
-          return turnTime
-        }
-        return prevTime - 1
-      })
-    }, 1000)
+    if (turnTime > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prevTime) => {
+          if (prevTime <= 1) {
+            clearInterval(timerRef.current!)
+            nextTurn()
+            return turnTime
+          }
+          return prevTime - 1
+        })
+      }, 1000)
 
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
+      return () => {
+        if (timerRef.current) clearInterval(timerRef.current)
+      }
     }
   }, [currentPlayerIndex, turnTime])
 
@@ -176,7 +181,9 @@ export default function Game() {
 
   const nextTurn = () => {
     setCurrentPlayerIndex((currentPlayerIndex + 1) % players.length)
-    setTimeLeft(turnTime)
+    if (turnTime > 0) {
+      setTimeLeft(turnTime)
+    }
   }
 
   const handlePass = () => {
@@ -250,9 +257,11 @@ export default function Game() {
             </li>
           ))}
         </ul>
-        <div className="text-center mb-2">
-          Time left: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
-        </div>
+        {turnTime > 0 && (
+          <div className="text-center mb-2">
+            Time left: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+          </div>
+        )}
         <Button onClick={handlePass} className="w-full" disabled={isLoading}>Pass</Button>
       </div>
       <Toaster />
