@@ -16,6 +16,7 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "The word game",
   description: "A simple word game to play with friends",
+  viewport: "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0",
 };
 
 export default function RootLayout({
