@@ -1,11 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { useSearchParams } from 'next/navigation'
-import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { toast } from '@/hooks/use-toast'
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Toaster } from '@/components/ui/toaster'
 import {
   Tooltip,
@@ -13,7 +10,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Loader2 } from 'lucide-react'
+import { toast } from '@/hooks/use-toast'
+import { Loader2, Menu } from 'lucide-react'
+import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
+import PlayersList from './PlayerList'
+import { Player, Word } from '../types'
 
 const API_BASE_URL = 'https://api.dictionaryapi.dev/api/v2/entries/en/'
 
@@ -34,11 +37,11 @@ async function validateWord(word: string): Promise<{ valid: boolean; meaning?: s
 
 export default function Game() {
   const searchParams = useSearchParams()
-  const [players, setPlayers] = useState<{ name: string; score: number }[]>([])
+  const [players, setPlayers] = useState<Player[]>([])
   const [wordLength, setWordLength] = useState(5)
   const [turnTime, setTurnTime] = useState(0)
   const [currentWord, setCurrentWord] = useState('')
-  const [words, setWords] = useState<{ [key: string]: { word: string; meaning: string; isNew?: boolean }[] }>({})
+  const [words, setWords] = useState<{ [key: string]: Word[] }>({})
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0)
   const [activeLetter, setActiveLetter] = useState('')
   const [usedLetters, setUsedLetters] = useState<string[]>([])
@@ -194,75 +197,100 @@ export default function Game() {
     nextTurn()
   }
 
+  const nextPlayer = players[(currentPlayerIndex + 1) % players.length]
+
   return (
     <div className="min-h-screen bg-gray-900 text-white flex">
-      <div className="flex-grow p-6 overflow-auto flex flex-col">
-        <Link href="/" className="text-3xl font-bold mb-6 hover:underline">
-          Word Game
-        </Link>
-        <div className="flex-grow mb-4 overflow-auto">
-          <div className="flex flex-wrap gap-4 p-1">
-            {usedLetters.map((letter) => (
-              <div
-                key={letter}
-                className={`bg-gray-800 p-4 rounded-lg ${letter === activeLetter ? 'ring-2 ring-secondary' : ''}
-                h-auto max-h-[200px] w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-0.667rem)] md:w-[calc(25%-0.75rem)] lg:w-[calc(20%-0.8rem)]
-                flex flex-col`}
-              >
-                <h2 className="text-xl font-semibold mb-2">{letter}</h2>
-                <div className="flex-grow overflow-auto">
-                  <ul className="space-y-1">
-                    {words[letter]?.map(({ word, meaning, isNew }, index) => (
-                      <li key={index} className={`break-inside-avoid-column ${isNew ? 'text-yellow-400 font-bold' : ''}`}>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger className="text-left">{word}</TooltipTrigger>
-                            <TooltipContent>
-                              <p>{meaning}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            ))}
-          </div>
+      <div className="flex flex-grow flex-col">
+        <div className="flex items-center justify-between p-4 bg-gray-800 sm:bg-transparent">
+          <Link href="/" className="text-2xl sm:text-3xl font-bold hover:underline">
+            the.word.game
+          </Link>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="sm:hidden">
+                <Menu className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-gray-800">
+              <PlayersList
+                players={players}
+                currentPlayerIndex={currentPlayerIndex}
+                turnTime={turnTime}
+                timeLeft={timeLeft}
+                onPass={handlePass}
+              />
+            </SheetContent>
+          </Sheet>
         </div>
-        <div className="flex w-full">
-          <Input
-            ref={inputRef}
-            value={currentWord}
-            onChange={(e) => setCurrentWord(e.target.value.toLowerCase())}
-            onKeyPress={handleKeyPress}
-            maxLength={wordLength}
-            className="flex-grow mr-2"
-            placeholder={`Enter a ${wordLength}-letter word${activeLetter ? ` starting with ${activeLetter}` : ''}`}
-            disabled={isLoading}
-          />
-          <Button onClick={handleSubmitWord} disabled={isLoading}>
-            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Submit
-          </Button>
+        <div className="flex-grow p-4 sm:p-6 overflow-auto flex flex-col">
+          <div className="mb-4 p-4 sm:hidden bg-gray-800 rounded-lg flex items-center justify-between">
+            <div>
+              <p className="text-lg font-semibold">Next Player: {nextPlayer?.name}</p>
+              <p className="text-sm text-gray-400">
+                Start with: {activeLetter ? activeLetter : 'Any letter'}
+              </p>
+            </div>
+            <Button onClick={handlePass} className="sm:hidden">Pass</Button>
+          </div>
+          <div className="flex-grow mb-4 p-1 overflow-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4">
+              {usedLetters.map((letter) => (
+                <div
+                  key={letter}
+                  className={`bg-gray-800 p-3 sm:p-4 rounded-lg ${letter === activeLetter ? 'ring-2 ring-secondary' : ''}
+                  h-auto max-h-[150px] sm:max-h-[200px] flex flex-col`}
+                >
+                  <h2 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2">{letter}</h2>
+                  <div className="flex-grow overflow-auto">
+                    <ul className="space-y-1 text-xs sm:text-sm">
+                      {words[letter]?.map(({ word, meaning, isNew }, index) => (
+                        <li key={index} className={`break-inside-avoid-column ${isNew ? 'text-yellow-400 font-bold' : ''}`}>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger className="text-left">{word}</TooltipTrigger>
+                              <TooltipContent>
+                                <p>{meaning}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="flex w-full space-x-2">
+              <Input
+                ref={inputRef}
+                value={currentWord}
+                onChange={(e) => setCurrentWord(e.target.value.toLowerCase())}
+                onKeyPress={handleKeyPress}
+                maxLength={wordLength}
+                className="w-full pr-16 sm:pr-4"
+                placeholder={`Enter a ${wordLength}-letter word${activeLetter ? ` starting with ${activeLetter}` : ''}`}
+                disabled={isLoading}
+              />
+              <Button
+                onClick={handleSubmitWord}
+                disabled={isLoading}
+                variant="secondary"
+              >
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Submit'}
+              </Button>
+          </div>
         </div>
       </div>
-      <div className="w-64 bg-gray-800 p-4 overflow-auto flex flex-col">
-        <h2 className="text-xl font-semibold mb-4">Players</h2>
-        <ul className="space-y-2 flex-grow">
-          {players.map((player, index) => (
-            <li key={index} className={`flex justify-between p-2 rounded ${index === currentPlayerIndex ? 'bg-primary text-primary-foreground' : ''}`}>
-              <span>{player.name}</span>
-              <span>{player.score}</span>
-            </li>
-          ))}
-        </ul>
-        {turnTime > 0 && (
-          <div className="text-center mb-2">
-            Time left: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
-          </div>
-        )}
-        <Button onClick={handlePass} className="w-full" disabled={isLoading}>Pass</Button>
+      <div className="hidden sm:block w-64 bg-gray-800 overflow-auto">
+        <PlayersList
+          players={players}
+          currentPlayerIndex={currentPlayerIndex}
+          turnTime={turnTime}
+          timeLeft={timeLeft}
+          onPass={handlePass}
+        />
       </div>
       <Toaster />
     </div>

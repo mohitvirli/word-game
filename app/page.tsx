@@ -33,10 +33,10 @@ export default function StartGame() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 flex p-6">
+    <div className="min-h-screen bg-gray-900 text-gray-100 flex p-4 sm:p-6">
       <div className="flex-grow flex flex-col space-y-6 max-w-3xl mx-auto">
-        <h1 className="text-3xl font-bold text-center text-white">Word Game</h1>
-        <div className="flex space-x-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-center text-white">the.word.game</h1>
+        <div className="flex flex-col sm:flex-row space-y-6 sm:space-y-0 sm:space-x-6">
           <div className="flex-1">
             <Card className="bg-gray-800 border-gray-700">
               <CardHeader>
@@ -51,7 +51,7 @@ export default function StartGame() {
                       value={playerName}
                       onChange={(e) => setPlayerName(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && addPlayer()}
-                      className="flex-gro text-white"
+                      className="flex-grow text-white"
                       placeholder="Enter player name"
                     />
                     <Button onClick={addPlayer} className="ml-2">Add</Button>
@@ -100,7 +100,7 @@ export default function StartGame() {
               </CardContent>
             </Card>
           </div>
-          <div className="w-64 space-y-6">
+          <div className="w-full sm:w-64 space-y-6">
             <Card className="bg-gray-800 border-gray-700">
               <CardHeader>
                 <CardTitle className="text-white">Players</CardTitle>
