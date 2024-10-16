@@ -1,7 +1,7 @@
 import { Player } from '@/app/types';
 import { NextResponse } from 'next/server'
 
-let players: Player[] = []
+const players: Player[] = []
 
 function generateAvatarUrl(name: string) {
   const hash = name.split('').reduce((acc, char) => {

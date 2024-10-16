@@ -225,7 +225,7 @@ export default function Game() {
                 <AvatarFallback>{nextPlayer?.name.charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="text-lg font-semibold">{nextPlayer?.name}'s turn</p>
+                <p className="text-lg font-semibold">{nextPlayer?.name}&rsquo;s turn</p>
                 <p className="text-sm text-gray-400">
                   Start with: {activeLetter ? activeLetter : 'Any letter'}
                 </p>
