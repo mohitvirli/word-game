@@ -1,3 +1,4 @@
+import { Room } from "../types";
 
 export const fetchPlayers = async () => {
   try {
@@ -38,5 +39,20 @@ export const deletePlayer = async (id: string) => {
     return true;
   } catch (error) {
     console.error('Error removing player:', error)
+  }
+}
+
+export const addPlayerToRoom = async (playerName: string, room: Room) => {
+  try {
+    const response = await fetch('/api/players', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: playerName, room })
+    });
+    if (!response.ok) throw new Error('Failed to add player')
+    const responseData = await response.json()
+    return responseData;
+  } catch (error) {
+    console.error('Error adding player:', error)
   }
 }

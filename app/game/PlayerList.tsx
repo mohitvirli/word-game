@@ -9,10 +9,11 @@ interface PlayerListProps {
   currentPlayerIndex: number;
   turnTime: number;
   timeLeft: number;
+  isActivePlayer: boolean
   onPass: () => void;
 }
 
-export default function PlayersList({ players, currentPlayerIndex, turnTime, timeLeft, onPass }: PlayerListProps) {
+export default function PlayersList({ players, currentPlayerIndex, turnTime, timeLeft, onPass, isActivePlayer }: PlayerListProps) {
   return (
     <div className="flex flex-col sm:min-h-screen sm:p-4 text-white">
       <div className="flex-grow">
@@ -38,7 +39,7 @@ export default function PlayersList({ players, currentPlayerIndex, turnTime, tim
             Time left: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
           </div>
         )}
-        <Button onClick={onPass} className="w-full mt-2">Pass</Button>
+        <Button onClick={onPass} className="w-full mt-2" disabled={!isActivePlayer}>Pass</Button>
       </div>
     </div>
   )

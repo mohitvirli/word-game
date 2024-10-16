@@ -6,10 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { Toaster } from '@/components/ui/toaster'
 import { X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { addNewPlayer, deletePlayer, fetchPlayers } from './services/player.service'
+import { createNewRoom } from './services/room.service'
 import { Player } from './types'
 
 export default function StartGame() {
@@ -18,8 +20,29 @@ export default function StartGame() {
   const [wordLength, setWordLength] = useState(4)
   const [useTurnTime, setUseTurnTime] = useState(false)
   const [turnTime, setTurnTime] = useState(120)
+  const [roomId, setRoomId] = useState('');
+  const [type, setType] = useState('local');
   const router = useRouter()
 
+  const createRoom = async () => {
+    const { roomId } = await createNewRoom({
+      action: 'create',
+      players,
+      wordLength,
+      turnTime: useTurnTime ? turnTime : 0
+    })
+    if (type === 'multiplayer') {
+      router.push(`/game/${roomId}?playerName=${playerName}`);
+    } else {
+      router.push(`/game/${roomId}`);
+    }
+  }
+
+  const joinGame = async () => {
+    router.push(`/game/${roomId}?playerName=${playerName}`);
+  }
+
+  // TODO:
   useEffect(() => {
     fetchAllPlayers()
   }, [])
@@ -35,10 +58,6 @@ export default function StartGame() {
     if (await deletePlayer(id)) setPlayers(players.filter(player => player.id !== id));
   }
 
-  const startGame = () => {
-    router.push(`/game?players=${JSON.stringify(players.map(p => p.name))}&wordLength=${wordLength}&turnTime=${useTurnTime ? turnTime : 0}`)
-  }
-
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 flex p-4 sm:p-6">
       <div className="flex-grow flex flex-col space-y-6 max-w-3xl mx-auto">
@@ -51,6 +70,23 @@ export default function StartGame() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
+                  <Label className="text-gray-200">Type</Label>
+                  <div className="flex mt-1 space-x-2">
+                    <Button
+                      onClick={() => setType('local')}
+                      className={`flex-grow ${type === 'local' ? 'ring-1 ring-white' : ''}`}
+                    >
+                      Local
+                    </Button>
+                    <Button
+                      onClick={() => setType('multiplayer')}
+                      className={`flex-grow ${type === 'multiplayer' ? 'ring-1 ring-white' : ''}`}
+                    >
+                      Multiplayer
+                    </Button>
+                  </div>
+                </div>
+                <div>
                   <Label htmlFor="playerName" className="text-gray-200">Player Name</Label>
                   <div className="flex mt-1">
                     <Input
@@ -61,7 +97,20 @@ export default function StartGame() {
                       className="flex-grow text-white"
                       placeholder="Enter player name"
                     />
-                    <Button onClick={addPlayer} className="ml-2">Add</Button>
+                    { type === 'local' && <Button onClick={addPlayer} className="ml-2">Add</Button> }
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-gray-200">Room ID</Label>
+                  <div className="flex mt-1 space-x-2">
+                    { type === 'multiplayer' && <Input
+                      id="roomId"
+                      value={roomId}
+                      onChange={(e) => setRoomId(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && createRoom()}
+                      className="flex-grow text-white"
+                      placeholder="Enter room ID"
+                    /> }
                   </div>
                 </div>
                 <div>
@@ -101,14 +150,27 @@ export default function StartGame() {
                     />
                   </div>
                 )}
-                <Button className="w-full mt-4" variant="secondary" onClick={startGame} disabled={players.length === 0}>
-                  Start Game
-                </Button>
+                <div className="flex space-x-2 mt-4">
+                  {type === 'local' &&
+                    <Button className="w-full" variant="secondary" onClick={createRoom} disabled={players.length === 0}>
+                      Start Game
+                    </Button>}
+                  {type === 'multiplayer' &&
+                    (<>
+                      <Button className="w-full" variant="secondary" onClick={createRoom}>
+                        Create Game
+                      </Button>
+                      <Button className="w-full" variant="secondary" onClick={joinGame} disabled={roomId.length === 0}>
+                        Join Game
+                      </Button>
+                    </>)
+                  }
+                </div>
               </CardContent>
             </Card>
           </div>
           <div className="w-full sm:w-64 space-y-6">
-            <Card className="bg-gray-800 border-gray-700">
+            { type === 'local' && (<Card className="bg-gray-800 border-gray-700">
               <CardHeader>
                 <CardTitle className="text-white">Players</CardTitle>
               </CardHeader>
@@ -134,7 +196,7 @@ export default function StartGame() {
                   </ul>
                 )}
               </CardContent>
-            </Card>
+            </Card>)}
             <Card className="bg-gray-800 border-gray-700">
               <CardHeader>
                 <CardTitle className="text-white">Rules</CardTitle>
@@ -152,6 +214,7 @@ export default function StartGame() {
           </div>
         </div>
       </div>
+      <Toaster />
     </div>
   )
 }

@@ -10,3 +10,15 @@ export interface Word {
   meaning: string;
   isNew?: boolean;
 }
+
+export interface Room {
+  id: string;
+  roomId: string;
+  players: Player[];
+  wordLength: number;
+  turnTime: number;
+  currentPlayer: Player;
+  words: { [key: string]: { word: string; meaning: string }[] };
+  activeLetter: string;
+  user?: Player;
+}
