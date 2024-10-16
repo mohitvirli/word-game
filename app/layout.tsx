@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -16,8 +16,14 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "The word game",
   description: "A simple word game to play with friends",
-  viewport: "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0",
 };
+
+export const viewport: Viewport = {
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 
 export default function RootLayout({
   children,
