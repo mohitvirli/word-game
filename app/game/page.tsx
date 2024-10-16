@@ -262,24 +262,26 @@ export default function Game() {
               ))}
             </div>
           </div>
-          <div className="flex w-full space-x-2">
-              <Input
-                ref={inputRef}
-                value={currentWord}
-                onChange={(e) => setCurrentWord(e.target.value.toLowerCase())}
-                onKeyPress={handleKeyPress}
-                maxLength={wordLength}
-                className="w-full pr-16 sm:pr-4"
-                placeholder={`Enter a ${wordLength}-letter word${activeLetter ? ` starting with ${activeLetter}` : ''}`}
-                disabled={isLoading}
-              />
-              <Button
-                onClick={handleSubmitWord}
-                disabled={isLoading}
-                variant="secondary"
-              >
-                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Submit'}
-              </Button>
+        </div>
+        <div className="sticky bottom-0 left-0 right-0 bg-gray-800 sm:bg-transparent p-4 ">
+          <div className="flex w-full space-x-2 max-w-3xl mx-auto">
+            <Input
+              ref={inputRef}
+              value={currentWord}
+              onChange={(e) => setCurrentWord(e.target.value.toLowerCase())}
+              onKeyPress={handleKeyPress}
+              maxLength={wordLength}
+              className="w-full pr-16 sm:pr-4"
+              placeholder={`Enter a ${wordLength}-letter word${activeLetter ? ` starting with ${activeLetter}` : ''}`}
+              disabled={isLoading}
+            />
+            <Button
+              onClick={handleSubmitWord}
+              disabled={isLoading}
+              variant="secondary"
+            >
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Submit'}
+            </Button>
           </div>
         </div>
       </div>
