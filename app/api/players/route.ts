@@ -1,14 +1,10 @@
 import { Player } from '@/app/types';
-import { NextResponse } from 'next/server'
+import { supabase } from '@/utils/supabase/supabase';
+import { NextResponse } from 'next/server';
+import { v4 as uuidv4 } from 'uuid';
+import { generateAvatarUrl } from '../helper';
 
 const players: Player[] = []
-
-function generateAvatarUrl(name: string) {
-  const hash = name.split('').reduce((acc, char) => {
-    return char.charCodeAt(0) + ((acc << 5) - acc);
-  }, 0);
-  return `https://api.dicebear.com/9.x/pixel-art/svg?seed=${hash}`;
-}
 
 export async function GET() {
   return NextResponse.json(players)
@@ -20,7 +16,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Name is required' }, { status: 400 })
   }
   const newPlayer = {
-    id: Date.now().toString(),
+    id: uuidv4(),
     name,
     avatarUrl: generateAvatarUrl(name),
     score: 0
@@ -43,14 +39,28 @@ export async function DELETE(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const { id, score } = await request.json()
-  if (!id || score === undefined) {
-    return NextResponse.json({ error: 'ID and score are required' }, { status: 400 })
+  const { name, room } = await request.json()
+  if (!name) {
+    return NextResponse.json({ error: 'Name is required' }, { status: 400 })
   }
-  const player = players.find(p => p.id === id)
-  if (!player) {
-    return NextResponse.json({ error: 'Player not found' }, { status: 404 })
+  if ((room.players as Player[]).find(p => p.name === name)) {
+    const newPlayer = (room.players as Player[]).find(p => p.name === name);
+    return NextResponse.json({ newPlayer, room });
   }
-  player.score = score
-  return NextResponse.json(player)
+
+  const newPlayer = {
+    id: uuidv4(),
+    name,
+    avatarUrl: generateAvatarUrl(name),
+    score: 0
+  }
+
+  const data = await supabase
+    .from('rooms')
+    .update({ players: [...room.players, newPlayer] })
+    .eq('roomId', room.roomId)
+    .select()
+    .single();
+
+  return NextResponse.json({ newPlayer, room: data.data });
 }
