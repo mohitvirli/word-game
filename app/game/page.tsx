@@ -226,10 +226,15 @@ export default function Game() {
         <div className="flex-grow p-4 sm:p-6 overflow-auto flex flex-col">
           <div className="mb-4 p-4 sm:hidden bg-gray-800 rounded-lg flex items-center justify-between">
             <div>
-              <p className="text-lg font-semibold">Next Player: {nextPlayer?.name}</p>
+              <p className="text-lg font-semibold">{nextPlayer?.name}'s turn</p>
               <p className="text-sm text-gray-400">
                 Start with: {activeLetter ? activeLetter : 'Any letter'}
               </p>
+              {turnTime > 0 && (
+                <p className="text-sm text-gray-400">
+                  Time left: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+                </p>
+              )}
             </div>
             <Button onClick={handlePass} className="sm:hidden">Pass</Button>
           </div>
