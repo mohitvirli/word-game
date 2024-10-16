@@ -1,5 +1,6 @@
 'use client'
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -13,30 +14,17 @@ import {
 import { toast } from '@/hooks/use-toast'
 import { Loader2, Menu } from 'lucide-react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
-import PlayersList from './PlayerList'
+import { fetchPlayers } from '../services/player.service'
+import { validateWord } from '../services/word.service'
 import { Player, Word } from '../types'
+import PlayersList from './PlayerList'
 
-const API_BASE_URL = 'https://api.dictionaryapi.dev/api/v2/entries/en/'
-
-async function validateWord(word: string): Promise<{ valid: boolean; meaning?: string }> {
-  try {
-    const response = await fetch(`${API_BASE_URL}${word}`)
-    if (!response.ok) {
-      return { valid: false }
-    }
-    const data = await response.json()
-    const meaning = data[0]?.meanings[0]?.definitions[0]?.definition || 'No definition available.'
-    return { valid: true, meaning }
-  } catch (error) {
-    console.error('Error validating word:', error)
-    return { valid: false }
-  }
-}
 
 export default function Game() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const [players, setPlayers] = useState<Player[]>([])
   const [wordLength, setWordLength] = useState(5)
   const [turnTime, setTurnTime] = useState(0)
@@ -52,12 +40,18 @@ export default function Game() {
   const timerRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    const playersParam = searchParams.get('players')
+    const fetchCurrentPlayers = async () => {
+      const data = await fetchPlayers();
+      if (data.length === 0) router.push('/')
+      setPlayers(data);
+    }
     const wordLengthParam = searchParams.get('wordLength')
     const turnTimeParam = searchParams.get('turnTime')
-    if (playersParam && wordLengthParam && turnTimeParam) {
-      setPlayers(JSON.parse(playersParam).map((name: string) => ({ name, score: 0 })))
-      setWordLength(parseInt(wordLengthParam))
+
+    fetchCurrentPlayers();
+
+    if (wordLengthParam) setWordLength(parseInt(wordLengthParam))
+    if (turnTimeParam) {
       const parsedTurnTime = parseInt(turnTimeParam)
       setTurnTime(parsedTurnTime)
       if (parsedTurnTime > 0) {
@@ -203,7 +197,7 @@ export default function Game() {
     <div className="min-h-svh bg-gray-900 text-white flex">
       <div className="flex flex-grow flex-col">
         <div className="flex items-center justify-between p-4 bg-gray-800 sm:bg-transparent">
-          <Link href="/" className="text-2xl sm:text-3xl font-bold hover:underline">
+          <Link href="/" className="text-2xl sm:text-3xl font-bold hover:underline font-mono">
             the.word.game
           </Link>
           <Sheet>
@@ -225,17 +219,24 @@ export default function Game() {
         </div>
         <div className="flex-grow p-4 sm:p-6 overflow-auto flex flex-col">
           <div className="mb-4 p-4 sm:hidden bg-gray-800 rounded-lg flex items-center justify-between">
-            <div>
-              <p className="text-lg font-semibold">{nextPlayer?.name}'s turn</p>
-              <p className="text-sm text-gray-400">
-                Start with: {activeLetter ? activeLetter : 'Any letter'}
-              </p>
-              {turnTime > 0 && (
+            <div className="flex items-center space-x-3">
+              <Avatar>
+                <AvatarImage src={nextPlayer?.avatarUrl} alt={nextPlayer?.name} />
+                <AvatarFallback>{nextPlayer?.name.charAt(0).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="text-lg font-semibold">{nextPlayer?.name}'s turn</p>
                 <p className="text-sm text-gray-400">
-                  Time left: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+                  Start with: {activeLetter ? activeLetter : 'Any letter'}
                 </p>
-              )}
+                {turnTime > 0 && (
+                  <p className="text-sm text-gray-400">
+                    Time left: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+                  </p>
+                )}
+              </div>
             </div>
+
             <Button onClick={handlePass} className="sm:hidden">Pass</Button>
           </div>
           <div className="flex-grow mb-4 p-1 overflow-auto">

@@ -1,41 +1,48 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { X } from 'lucide-react'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { X } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { addNewPlayer, deletePlayer, fetchPlayers } from './services/player.service'
+import { Player } from './types'
 
 export default function StartGame() {
-  const [players, setPlayers] = useState<string[]>([])
+  const [players, setPlayers] = useState<Player[]>([])
   const [playerName, setPlayerName] = useState('')
   const [wordLength, setWordLength] = useState(4)
   const [useTurnTime, setUseTurnTime] = useState(false)
   const [turnTime, setTurnTime] = useState(120)
   const router = useRouter()
 
-  const addPlayer = () => {
-    if (playerName && !players.includes(playerName)) {
-      setPlayers([...players, playerName])
-      setPlayerName('')
-    }
+  useEffect(() => {
+    fetchAllPlayers()
+  }, [])
+
+  const fetchAllPlayers = async () => setPlayers(await fetchPlayers())
+
+  const addPlayer = async () => {
+    setPlayers([...players, await addNewPlayer(playerName)])
+    setPlayerName('')
   }
 
-  const removePlayer = (name: string) => {
-    setPlayers(players.filter(player => player !== name))
+  const removePlayer = async (id: string) => {
+    if (await deletePlayer(id)) setPlayers(players.filter(player => player.id !== id));
   }
 
   const startGame = () => {
-    router.push(`/game?players=${JSON.stringify(players)}&wordLength=${wordLength}&turnTime=${useTurnTime ? turnTime : 0}`)
+    router.push(`/game?players=${JSON.stringify(players.map(p => p.name))}&wordLength=${wordLength}&turnTime=${useTurnTime ? turnTime : 0}`)
   }
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 flex p-4 sm:p-6">
       <div className="flex-grow flex flex-col space-y-6 max-w-3xl mx-auto">
-        <h1 className="text-2xl sm:text-3xl font-bold text-center text-white">the.word.game</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-center text-white font-mono">the.word.game</h1>
         <div className="flex flex-col sm:flex-row space-y-6 sm:space-y-0 sm:space-x-6">
           <div className="flex-1">
             <Card className="bg-gray-800 border-gray-700">
@@ -110,13 +117,19 @@ export default function StartGame() {
                   <p className="text-gray-400">No players added yet</p>
                 ) : (
                   <ul className="space-y-2">
-                    {players.map((player, index) => (
-                      <li key={index} className="flex items-center justify-between bg-gray-700 p-2 rounded-lg shadow-sm">
-                        <span className="text-white font-medium">{player}</span>
-                        <Button variant="ghost" size="sm" onClick={() => removePlayer(player)} className="text-gray-300 hover:text-white hover:bg-gray-600">
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </li>
+                    {players.map((player) => (
+                      <li key={player.id} className="flex items-center justify-between bg-gray-900 p-2 rounded-lg shadow-sm">
+                      <div className="flex items-center space-x-2">
+                        <Avatar className="w-8 h-8">
+                          <AvatarImage src={player.avatarUrl} alt={player.name} />
+                          <AvatarFallback>{player.name.charAt(0).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <span className="text-white font-bold">{player.name}</span>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => removePlayer(player.id)} className="text-gray-300 hover:text-white hover:bg-gray-600">
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </li>
                     ))}
                   </ul>
                 )}

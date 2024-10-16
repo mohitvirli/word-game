@@ -64,6 +64,10 @@ const config: Config = {
       },
       animation: {
         'fade-in': 'fade-in 0.75s ease-out',
+      },
+      fontFamily: {
+        sans: ["var(--font-geist-sans)"],
+        mono: ["var(--font-geist-mono)"],
       }
   	}
   },
