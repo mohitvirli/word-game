@@ -200,7 +200,7 @@ export default function Game() {
   const nextPlayer = players[(currentPlayerIndex + 1) % players.length]
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex">
+    <div className="min-h-svh bg-gray-900 text-white flex">
       <div className="flex flex-grow flex-col">
         <div className="flex items-center justify-between p-4 bg-gray-800 sm:bg-transparent">
           <Link href="/" className="text-2xl sm:text-3xl font-bold hover:underline">
@@ -263,7 +263,7 @@ export default function Game() {
             </div>
           </div>
         </div>
-        <div className="sticky bottom-0 left-0 right-0 bg-gray-800 sm:bg-transparent p-4 ">
+        <div className="fixed sm:static bottom-0 left-0 right-0 bg-gray-800 sm:bg-transparent p-4 ">
           <div className="flex w-full space-x-2 max-w-3xl mx-auto">
             <Input
               ref={inputRef}
@@ -284,6 +284,7 @@ export default function Game() {
             </Button>
           </div>
         </div>
+        <Toaster />
       </div>
       <div className="hidden sm:block w-64 bg-gray-800 overflow-auto">
         <PlayersList
@@ -294,7 +295,6 @@ export default function Game() {
           onPass={handlePass}
         />
       </div>
-      <Toaster />
     </div>
   )
 }
