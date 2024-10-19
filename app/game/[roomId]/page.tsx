@@ -297,11 +297,7 @@ export default function Game() {
               {Object.entries(room.words)
                 .sort((a, b) => a[0].localeCompare(b[0]))
                 .map(([letter, words]) => (
-<<<<<<< HEAD
-                  <BlockContent letter={letter} words={words} activeLetter={activeLetter} lastUsedWord={lastUsedWord} />
-=======
                   <BlockContent key={letter} letter={letter} words={words} activeLetter={activeLetter} lastUsedWord={lastUsedWord} />
->>>>>>> b445095 (Change block layout)
               ))}
             </div>
           </div>
