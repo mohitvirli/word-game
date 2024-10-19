@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     const newRoomId = id.substring(0, 4).toUpperCase();
     const room = {
       roomId: newRoomId,
-      players,
+      players: type === 'local' ? players : [],
       wordLength,
       turnTime,
       currentPlayer: players[0],
