@@ -1,12 +1,17 @@
+import { Room } from '@/app/types';
 import { supabase } from '@/utils/supabase/supabase';
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
+
+const localRooms: Record<string, Room> = {};
+
 export async function POST(request: Request) {
-  const { action, players, wordLength, turnTime } = await request.json()
+  const { action, players, wordLength, turnTime, type } = await request.json()
 
   if (action === 'create') {
-    const newRoomId = uuidv4().substring(0, 4).toUpperCase();
+    const id = uuidv4();
+    const newRoomId = id.substring(0, 4).toUpperCase();
     const room = {
       roomId: newRoomId,
       players,
@@ -16,9 +21,13 @@ export async function POST(request: Request) {
       words: {},
       activeLetter: ''
     }
-    const { status, error } = await supabase.from('rooms').insert(room)
+    if (type === 'local') {
+      localRooms[newRoomId] = { ...room, id };
+    } else {
+      const { status, error } = await supabase.from('rooms').insert(room)
 
-    if (status !== 201) return NextResponse.json({ error }, { status })
+      if (status !== 201) return NextResponse.json({ error }, { status })
+    }
     return NextResponse.json({ roomId: newRoomId })
   }
 
@@ -27,7 +36,20 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  const roomId = searchParams.get('roomId')
+  const roomId = searchParams.get('roomId');
+  const type = searchParams.get('type');
+
+  if (!roomId) {
+    return NextResponse.json({ error: 'Room not found' }, { status: 404 })
+  }
+  if (type === 'local') {
+    const room = localRooms[roomId];
+
+    if (!room) {
+      return NextResponse.json({ error: 'Room not found' }, { status: 404 })
+    }
+    return NextResponse.json(room)
+  }
 
   const { data, error } = await supabase
     .from('rooms')
@@ -35,7 +57,7 @@ export async function GET(request: Request) {
     .match({ roomId })
     .single();
 
-  if (!roomId || !data || error ) {
+  if (!data || error ) {
     return NextResponse.json({ error: 'Room not found' }, { status: 404 })
   }
 

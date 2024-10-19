@@ -29,20 +29,19 @@ export default function StartGame() {
       action: 'create',
       players,
       wordLength,
+      type,
       turnTime: useTurnTime ? turnTime : 0
     })
     if (type === 'multiplayer') {
       router.push(`/game/${roomId}?playerName=${playerName}`);
     } else {
-      router.push(`/game/${roomId}`);
+      router.push(`/game/${roomId}?type=local`);
     }
   }
 
   const joinGame = async () => {
     router.push(`/game/${roomId}?playerName=${playerName}`);
   }
-
-  // TODO:
   useEffect(() => {
     fetchAllPlayers()
   }, [])

@@ -5,6 +5,7 @@ interface NewRoom {
   players: Player[];
   wordLength: number;
   turnTime: number;
+  type: string;
 }
 interface AddNewWord {
   players: Player[];
@@ -25,8 +26,8 @@ export const createNewRoom = async (payload: NewRoom) => {
   return data;
 }
 
-export const getRoom = async (roomId: string) => {
-  const response = await fetch(`/api/rooms?roomId=${roomId}`)
+export const getRoom = async (roomId: string, type?: string) => {
+  const response = await fetch(`/api/rooms?roomId=${roomId}&type=${type}`)
   if (!response.ok) throw new Error('Failed to fetch room data')
 
   const data = await response.json()

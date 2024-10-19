@@ -43,7 +43,7 @@ export default function Game() {
   useEffect(() => {
     const fetchRoom = async () => {
       try {
-        const data = await getRoom(roomId as string);
+        const data = await getRoom(roomId as string, searchParams.get('type') as string);
 
         setRoom(data)
         if (data.turnTime > 0) {
