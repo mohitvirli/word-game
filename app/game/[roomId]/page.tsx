@@ -7,12 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Toaster } from '@/components/ui/toaster'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 import { toast } from '@/hooks/use-toast'
 import { supabase } from '@/utils/supabase/supabase'
 import { Loader2, Menu } from 'lucide-react'
@@ -23,6 +17,7 @@ import { addPlayerToRoom } from '../../services/player.service'
 import { validateWord } from '../../services/word.service'
 import { Player, Room } from '../../types'
 import PlayersList from '../PlayerList'
+import { BlockContent } from './block'
 
 
 export default function Game() {
@@ -298,33 +293,11 @@ export default function Game() {
             <Button onClick={handlePass} className="sm:hidden">Pass</Button>
           </div>
           <div className="flex-grow mb-4 p-1 overflow-auto">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4">
+            <div className="columns-2 sm:columns-2 md:columns-3 lg:columns-4 gap-4">
               {Object.entries(room.words)
                 .sort((a, b) => a[0].localeCompare(b[0]))
                 .map(([letter, words]) => (
-                <div
-                  key={letter}
-                  className={`bg-gray-800 p-3 sm:p-4 rounded-lg ${letter === activeLetter ? 'ring-2 ring-secondary' : ''}
-                  h-auto max-h-[150px] sm:max-h-[200px] flex flex-col`}
-                >
-                  <h2 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2">{letter}</h2>
-                  <div className="flex-grow overflow-auto">
-                    <ul className="space-y-1 text-xs sm:text-sm">
-                      {words?.map(({ word, meaning }, index) => (
-                        <li key={index} className={`break-inside-avoid-colum`}>
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger className={`text-left ${lastUsedWord === word ? 'text-yellow-400' : ''}`}>{word}</TooltipTrigger>
-                              <TooltipContent>
-                                <p>{meaning}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
+                  <BlockContent letter={letter} words={words} activeLetter={activeLetter} lastUsedWord={lastUsedWord} />
               ))}
             </div>
           </div>

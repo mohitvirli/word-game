@@ -203,11 +203,11 @@ export default function StartGame() {
               </CardHeader>
               <CardContent>
                 <ul className="list-disc pl-5 space-y-1 text-sm text-gray-200">
-                  <li>Enter words of the chosen length</li>
-                  <li>Start with the last letter of the previous word</li>
-                  <li>No repeating words</li>
-                  <li>1 point per valid word</li>
-                  <li>Game ends when no valid words remain or all pass</li>
+                  <li>Players take turns to enter words of the chosen length.</li>
+                  <li>Each word must start with the last letter of the previous word.</li>
+                  <li>Words cannot be repeated during the game.</li>
+                  <li>Players score 1 point for each valid word.</li>
+                  <li>If turn time is enabled, players must enter a word before the timer runs out.</li>
                 </ul>
               </CardContent>
             </Card>
